@@ -1,15 +1,18 @@
-REM filepath: /c:/Users/andre/Documents/Git/move_files_and_folders/move_files.bat
-@echo off
-setlocal EnableDelayedExpansion
+@echo off                                    REM Prevents commands from displaying in console
+setlocal EnableDelayedExpansion             REM Enables dynamic variable expansion
 
-REM Create log file with timestamp
+REM === Log File Setup ===
+REM Creates a log file with format YYYYMMDD
 set LOGFILE=move_files_%date:~-4,4%%date:~-10,2%%date:~-7,2%.log
 
-REM Set source and destination directories
+REM === Directory Configuration ===
+REM Define source and destination paths
 set SOURCE_DIR=C:\Users\andre\Documents\Git\move_files_and_folders\source
 set DEST_DIR=C:\Users\andre\Documents\Git\move_files_and_folders\destination
 
-REM Check if directories exist
+REM === Directory Validation ===
+REM Check if source exists, exit if it doesn't
+REM Check if destination exists, create if it doesn't
 if not exist "%SOURCE_DIR%" (
     echo Error: Source directory does not exist >> %LOGFILE%
     exit /b 1
@@ -19,37 +22,46 @@ if not exist "%DEST_DIR%" (
     mkdir "%DEST_DIR%"
 )
 
-REM Example of moving a specific file
+REM === Specific File Operation Example ===
+REM Demonstrates moving a single specific file
 echo Moving specific file
 move "%SOURCE_DIR%\files\NWSS_Public_SARS-CoV-2_Wastewater_Metric_Data_20241231 - Copy.csv" "%DEST_DIR%\files"
 
-REM Example of copying instead of moving files
+REM === Bulk Copy Operations ===
+REM Copy all files preserving directory structure (/E)
+REM Create destination if needed (/I)
+REM Suppress overwrite prompts (/Y)
 echo Copying files from %SOURCE_DIR%\files to %DEST_DIR%\files
 xcopy "%SOURCE_DIR%\files\*" "%DEST_DIR%\files\" /E /I /Y
 
-REM Example of copying folders
-echo Copying folders from %SOURCE_DIR%\folders to %DEST_DIR%\folders
-xcopy "%SOURCE_DIR%\folders\*" "%DEST_DIR%\folders\" /E /I /Y
-
-REM Move operations
-REM Move files from source to destination
+REM === Move Operations ===
+REM Move all files from source to destination
+REM Uses wildcard (*) to select all files
 echo Moving files from %SOURCE_DIR%\files to %DEST_DIR%\files
 move %SOURCE_DIR%\files\* %DEST_DIR%\files
 
-REM Move folders from source to destination
+REM === Folder Move Operations ===
+REM Iterates through folders using for loop
+REM %%d represents each directory found
 echo Moving folders from %SOURCE_DIR%\folders to %DEST_DIR%\folders
 for /D %%d in (%SOURCE_DIR%\folders\*) do (
     move "%%d" "%DEST_DIR%\folders"
 )
 
-REM Example of moving files by extension
+REM === File Type Filtering Example ===
+REM Demonstrates moving only specific file types
+REM Uses *.csv to filter for CSV files only
 echo Moving only CSV files
 move "%SOURCE_DIR%\files\*.csv" "%DEST_DIR%\files"
 
-REM Example of moving files newer than X days
+REM === Date-Based Operations ===
+REM Moves files modified in last 7 days
+REM /D -7 means "newer than 7 days"
 forfiles /P "%SOURCE_DIR%\files" /D -7 /C "cmd /c move @path %DEST_DIR%\files"
 
-REM Example of moving files with error handling
+REM === Error Handling Example ===
+REM Redirects errors to log file using 2>>
+REM Checks errorlevel for operation status
 echo Moving files with error checking
 move "%SOURCE_DIR%\files\*.csv" "%DEST_DIR%\files" 2>>%LOGFILE%
 if errorlevel 1 (
@@ -58,9 +70,9 @@ if errorlevel 1 (
     echo Files moved successfully >> %LOGFILE%
 )
 
+REM === Completion and Summary ===
+REM Display log contents and wait for user
 echo Operations completed.
-
-REM Display operation summary
 echo ========================
 type %LOGFILE%
 echo ========================
